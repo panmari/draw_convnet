@@ -36,12 +36,14 @@ import matplotlib.pyplot as plt
 plt.rcdefaults()
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
+from matplotlib.patches import Circle
 from matplotlib.collections import PatchCollection
 
 
 NumConvMax = 8
-NumFcMax = 20
+NumFcMax = 35
 White = 1.
+VeryLight = 0.8
 Light = 0.7
 Medium = 0.5
 Dark = 0.3
@@ -51,17 +53,22 @@ Black = 0.
 def add_layer(patches, colors, size=24, num=5,
               top_left=[0, 0],
               loc_diff=[3, -3],
-              ):
+              over_max=True):
     # add a rectangle
     top_left = np.array(top_left)
     loc_diff = np.array(loc_diff)
     loc_start = top_left - np.array([0, size])
     for ind in range(num):
-        patches.append(Rectangle(loc_start + ind * loc_diff, size, size))
-        if ind % 2:
-            colors.append(Medium)
+        if over_max and abs(ind - num / 2) < 2:
+            # Print three dots in the middle to indicate that there are omitted elements.
+            patches.append(Circle(loc_start + size / 2 + ind * loc_diff, 0.2))
+            colors.append(Black)
         else:
-            colors.append(Light)
+            patches.append(Rectangle(loc_start + ind * loc_diff, size, size))
+            if ind % 2:
+                colors.append(Medium)
+            else:
+                colors.append(Light)
 
 
 def add_mapping(patches, colors, start_ratio, patch_size, ind_bgn,
@@ -122,13 +129,13 @@ if __name__ == '__main__':
 
     #num_show_list = list(map(min, num_list, [NumConvMax] * len(num_list)))\
     #Hard coded list of number of rectangles for a feature map.
-    num_show_list = [4, 10, 14, 18, 24]
+    num_show_list = [4, 14, 18, 24, 26]
     top_left_list = np.c_[np.cumsum(x_diff_list), np.zeros(len(x_diff_list))]
 
     for ind in range(len(size_list)):
         add_layer(patches, colors, size=size_list[ind],
                   num=num_show_list[ind],
-                  top_left=top_left_list[ind], loc_diff=loc_diff_list[ind])
+                  top_left=top_left_list[ind], loc_diff=loc_diff_list[ind], over_max=ind != 0)
         label(top_left_list[ind], text_list[ind] + '\n{}@{}x{}'.format(
             num_list[ind], size_list[ind], size_list[ind]))
 
@@ -152,7 +159,7 @@ if __name__ == '__main__':
     ############################
     # fully connected layers
     size_list = [fc_unit_size, fc_unit_size]
-    num_list = [4 * 512, 1]
+    num_list = [4 * 4 * 512, 1]
     num_show_list = list(map(min, num_list, [NumFcMax] * len(num_list)))
     x_diff_list = [sum(x_diff_list) + layer_width, layer_width, layer_width]
     top_left_list = np.c_[np.cumsum(x_diff_list), np.zeros(len(x_diff_list))]
@@ -180,9 +187,9 @@ if __name__ == '__main__':
     plt.axis('equal')
     plt.axis('off')
     #plt.show()
-    fig.set_size_inches(15, 2.5)
+    fig.set_size_inches(16.5, 2.5)
 
     fig_dir = './'
     fig_ext = '.png'
-    fig.savefig(os.path.join(fig_dir, 'convnet_fig' + fig_ext),
+    fig.savefig(os.path.join(fig_dir, 'discriminator_architecture' + fig_ext),
                 bbox_inches='tight', pad_inches=0)
