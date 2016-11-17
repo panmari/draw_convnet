@@ -74,18 +74,16 @@ def add_layer(patches, colors, size=24, num=5,
 def add_mapping(patches, colors, start_ratio, patch_size, ind_bgn,
                 top_left_list, loc_diff_list, num_show_list, size_list):
 
-    start_loc = top_left_list[ind_bgn] \
+    end_loc = top_left_list[ind_bgn] \
         + (num_show_list[ind_bgn] - 1) * np.array(loc_diff_list[ind_bgn]) \
         + np.array([start_ratio[0] * size_list[ind_bgn],
                     -start_ratio[1] * size_list[ind_bgn]])
 
-    end_loc = top_left_list[ind_bgn + 1] \
+    start_loc = top_left_list[ind_bgn + 1] \
         + (num_show_list[ind_bgn + 1] - 1) \
         * np.array(loc_diff_list[ind_bgn + 1]) \
-        + np.array([(start_ratio[0] + .5 * patch_size / size_list[ind_bgn]) *
-                    size_list[ind_bgn + 1],
-                    -(start_ratio[1] - .5 * patch_size / size_list[ind_bgn]) *
-                    size_list[ind_bgn + 1]])
+        + np.array([(start_ratio[0] * size_list[ind_bgn + 1]),
+                   -start_ratio[1] * size_list[ind_bgn + 1]])
 
     patches.append(Rectangle(start_loc, patch_size, patch_size))
     colors.append(Dark)
@@ -121,31 +119,31 @@ if __name__ == '__main__':
 
     ############################
     # conv layers
-    size_list = [64, 32, 16, 8, 4]
-    num_list = [1, 64, 128, 256, 512]
+    size_list = [4, 8, 16, 32, 64]
+    num_list = [516, 256, 128, 64, 3]
     x_diff_list = [0] + [layer_width] * (len(size_list) - 1)
-    text_list = ['Sketch\n'] + ['Feature\nmaps'] * (len(size_list) - 2) + ['Abstract\nrepresentation']
+    text_list = ['Abstract representation +\n4 Random slices'] + ['Feature\nmaps'] * (len(size_list) - 2) + ['Shaded color\nimage']
     loc_diff_list = [[3, -3]] * len(size_list)
 
     #num_show_list = list(map(min, num_list, [NumConvMax] * len(num_list)))\
     #Hard coded list of number of rectangles for a feature map.
-    num_show_list = [1, 14, 18, 24, 26]
+    num_show_list = [26, 24, 18, 14, 3]
     top_left_list = np.c_[np.cumsum(x_diff_list), np.zeros(len(x_diff_list))]
 
     for ind in range(len(size_list)):
         add_layer(patches, colors, size=size_list[ind],
                   num=num_show_list[ind],
-                  top_left=top_left_list[ind], loc_diff=loc_diff_list[ind], over_max=ind != 0)
+                  top_left=top_left_list[ind], loc_diff=loc_diff_list[ind], over_max=ind != 4)
         label(top_left_list[ind], text_list[ind] + '\n{}@{}x{}'.format(
             num_list[ind], size_list[ind], size_list[ind]))
 
 
     ############################
     # in between layers
-    start_ratio_list = [[0.5, 0.4], [0.5, 0.4], [0.4, 0.5], [0.3, 0.8]]
+    start_ratio_list = [[0.2, 0.8], [0.2, 0.8], [0.2, 0.8], [0.2, 0.8]]
     patch_size_list = [5] * (len(size_list) - 1)
     ind_bgn_list = range(len(patch_size_list))
-    text_list = ['Convolution + lReLU'] * len(size_list)
+    text_list = ['Deconvolution + ReLU'] * (len(size_list) - 1) + ['Deconvolution + tanh']
     label_xy_offset=[0, -layer_width - 12]
 
     for ind in range(len(patch_size_list)):
@@ -169,5 +167,5 @@ if __name__ == '__main__':
 
     fig_dir = './'
     fig_ext = '.png'
-    fig.savefig(os.path.join(fig_dir, 'generator_to_abstract_architecture' + fig_ext),
+    fig.savefig(os.path.join(fig_dir, 'generator_to_shaded_architecture' + fig_ext),
                 bbox_inches='tight', pad_inches=0)
