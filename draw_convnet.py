@@ -104,7 +104,7 @@ def label(xy, text, xy_off=[0, 4]):
 if __name__ == '__main__':
 
     fc_unit_size = 2
-    layer_width = 40
+    layer_width = 85
 
     patches = []
     colors = []
@@ -114,13 +114,15 @@ if __name__ == '__main__':
 
     ############################
     # conv layers
-    size_list = [32, 18, 10, 6, 4]
-    num_list = [3, 32, 32, 48, 48]
-    x_diff_list = [0, layer_width, layer_width, layer_width, layer_width]
+    size_list = [64, 32, 16, 8, 4]
+    num_list = [4, 64, 128, 256, 512]
+    x_diff_list = [0] + [layer_width] * (len(size_list) - 1)
     text_list = ['Inputs'] + ['Feature\nmaps'] * (len(size_list) - 1)
     loc_diff_list = [[3, -3]] * len(size_list)
 
-    num_show_list = list(map(min, num_list, [NumConvMax] * len(num_list)))
+    #num_show_list = list(map(min, num_list, [NumConvMax] * len(num_list)))\
+    #Hard coded list of number of rectangles for a feature map.
+    num_show_list = [4, 10, 14, 18, 24]
     top_left_list = np.c_[np.cumsum(x_diff_list), np.zeros(len(x_diff_list))]
 
     for ind in range(len(size_list)):
@@ -133,23 +135,24 @@ if __name__ == '__main__':
 
     ############################
     # in between layers
-    start_ratio_list = [[0.4, 0.5], [0.4, 0.8], [0.4, 0.5], [0.4, 0.8]]
-    patch_size_list = [5, 2, 5, 2]
+    start_ratio_list = [[0.4, 0.5]] * (len(size_list) - 1)
+    patch_size_list = [5] * (len(size_list) - 1)
     ind_bgn_list = range(len(patch_size_list))
-    text_list = ['Convolution', 'Max-pooling', 'Convolution', 'Max-pooling']
+    text_list = ['Convolution + lReLU'] * len(size_list)
+    label_xy_offset=[0, -layer_width - 12]
 
     for ind in range(len(patch_size_list)):
         add_mapping(patches, colors, start_ratio_list[ind],
                     patch_size_list[ind], ind,
                     top_left_list, loc_diff_list, num_show_list, size_list)
         label(top_left_list[ind], text_list[ind] + '\n{}x{} kernel'.format(
-            patch_size_list[ind], patch_size_list[ind]), xy_off=[26, -65])
+            patch_size_list[ind], patch_size_list[ind]), xy_off=label_xy_offset)
 
 
     ############################
     # fully connected layers
-    size_list = [fc_unit_size, fc_unit_size, fc_unit_size]
-    num_list = [768, 500, 2]
+    size_list = [fc_unit_size, fc_unit_size]
+    num_list = [4 * 512, 1]
     num_show_list = list(map(min, num_list, [NumFcMax] * len(num_list)))
     x_diff_list = [sum(x_diff_list) + layer_width, layer_width, layer_width]
     top_left_list = np.c_[np.cumsum(x_diff_list), np.zeros(len(x_diff_list))]
@@ -162,10 +165,11 @@ if __name__ == '__main__':
         label(top_left_list[ind], text_list[ind] + '\n{}'.format(
             num_list[ind]))
 
-    text_list = ['Flatten\n', 'Fully\nconnected', 'Fully\nconnected']
+    text_list = ['Flatten\n', 'Fully\nconnected']
 
+    label_xy_offset = [-50, label_xy_offset[1]]
     for ind in range(len(size_list)):
-        label(top_left_list[ind], text_list[ind], xy_off=[-10, -65])
+        label(top_left_list[ind], text_list[ind], xy_off=label_xy_offset)
 
     ############################
     colors += [0, 1]
@@ -175,8 +179,8 @@ if __name__ == '__main__':
     plt.tight_layout()
     plt.axis('equal')
     plt.axis('off')
-    plt.show()
-    fig.set_size_inches(8, 2.5)
+    #plt.show()
+    fig.set_size_inches(15, 2.5)
 
     fig_dir = './'
     fig_ext = '.png'
