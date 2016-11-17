@@ -135,7 +135,7 @@ if __name__ == '__main__':
 
     ############################
     # in between layers
-    start_ratio_list = [[0.4, 0.5]] * (len(size_list) - 1)
+    start_ratio_list = [[0.5, 0.4], [0.5, 0.4], [0.4, 0.5], [0.3, 0.8]]
     patch_size_list = [5] * (len(size_list) - 1)
     ind_bgn_list = range(len(patch_size_list))
     text_list = ['Convolution + lReLU'] * len(size_list)
